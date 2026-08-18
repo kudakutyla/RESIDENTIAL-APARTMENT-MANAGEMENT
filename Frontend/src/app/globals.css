@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root {
+  --brand-terracotta: #c76b4a;
+  --brand-sand: #d9b98c;
+  --brand-cream: #f8f3ea;
+  --brand-olive: #4f5d45;
+  --brand-charcoal: #292824;
+}
+
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+  --color-brand-terracotta: var(--brand-terracotta);
+  --color-brand-sand: var(--brand-sand);
+  --color-brand-cream: var(--brand-cream);
+  --color-brand-olive: var(--brand-olive);
+  --color-brand-charcoal: var(--brand-charcoal);
+}
+
+body {
+  background: radial-gradient(circle at 15% 10%, rgba(217, 185, 140, 0.22), transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(199, 107, 74, 0.2), transparent 40%),
+    var(--brand-cream);
+  color: var(--brand-charcoal);
+  font-family: var(--font-body), sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading), serif;
+}
+
+@keyframes blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blink {
+    animation: none;
+  }
+}
