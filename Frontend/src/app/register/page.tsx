@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { registerSchema } from "@/lib/formSchemas";
 import { authService } from "@/services/authService";
 import { useAuth } from "@/hooks/useAuth";
+import { getErrorMessage } from "@/lib/utils";
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -33,8 +34,8 @@ export default function RegisterPage() {
       await refresh();
       toast.success("Tenant account created successfully.");
       router.push("/portal");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to register.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to register."));
     }
   };
 
