@@ -17,7 +17,7 @@ export async function tenantDashboard(userId: string) {
     `SELECT status, COUNT(*)::int as count FROM payments WHERE tenant_id = $1 GROUP BY status`,
     [userId],
   );
-  const docs = await query(`SELECT COUNT(*)::int as count FROM documents WHERE tenant_id = $1`, [userId]);
+  const docs = await query<{ count: number }>(`SELECT COUNT(*)::int as count FROM documents WHERE tenant_id = $1`, [userId]);
 
   return {
     apartment: apartment.rows[0] ?? null,

@@ -17,7 +17,7 @@ export async function getUsers(req: Request, res: Response) {
 export async function updateUserStatus(req: Request, res: Response) {
   const user = await adminSetUserStatus({
     actorUserId: req.user!.id,
-    userId: req.params.id,
+    userId: String(req.params.id),
     status: req.body.status,
   });
   res.status(200).json({ user });

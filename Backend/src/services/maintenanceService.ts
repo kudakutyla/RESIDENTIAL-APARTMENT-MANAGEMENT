@@ -17,7 +17,7 @@ export async function createMaintenanceRequest(input: {
   if (!apartment.rows.length) throw new HttpError(404, "Apartment not found");
   if (apartment.rows[0].tenant_id !== input.userId) throw new HttpError(403, "Forbidden");
 
-  const { rows } = await query(
+  const { rows } = await query<{ id: string }>(
     `INSERT INTO maintenance_requests
      (tenant_id, building_id, apartment_id, title, description, category, priority, status)
      VALUES ($1,$2,$3,$4,$5,$6,$7,'Submitted') RETURNING *`,

@@ -3,7 +3,7 @@ import { env } from "../config/env";
 import type { JwtPayload } from "../types/auth";
 
 export function signAccessToken(payload: JwtPayload) {
-  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN });
+  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"] });
 }
 
 export function verifyAccessToken(token: string) {

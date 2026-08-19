@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, type QueryResultRow } from "pg";
 import { env } from "../config/env";
 
 export const pool = new Pool({
@@ -6,6 +6,6 @@ export const pool = new Pool({
   ssl: env.isProduction ? { rejectUnauthorized: false } : false,
 });
 
-export async function query<T>(text: string, params: unknown[] = []) {
+export async function query<T extends QueryResultRow>(text: string, params: unknown[] = []) {
   return pool.query<T>(text, params);
 }

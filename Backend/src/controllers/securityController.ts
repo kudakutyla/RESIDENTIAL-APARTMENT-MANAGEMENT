@@ -12,6 +12,6 @@ export async function postSecurity(req: Request, res: Response) {
 }
 
 export async function patchSecurity(req: Request, res: Response) {
-  const report = await updateSecurityReportStatus({ id: req.params.id, status: req.body.status });
+  const report = await updateSecurityReportStatus({ id: String(req.params.id), status: req.body.status });
   res.status(200).json({ report });
 }

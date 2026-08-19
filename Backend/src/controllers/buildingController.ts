@@ -12,11 +12,11 @@ export async function postBuilding(req: Request, res: Response) {
 }
 
 export async function putBuilding(req: Request, res: Response) {
-  const building = await updateBuilding({ id: req.params.id, actorUserId: req.user!.id, ...req.body });
+  const building = await updateBuilding({ id: String(req.params.id), actorUserId: req.user!.id, ...req.body });
   res.status(200).json({ building });
 }
 
 export async function deleteBuilding(req: Request, res: Response) {
-  const building = await deactivateBuilding(req.user!.id, req.params.id);
+  const building = await deactivateBuilding(req.user!.id, String(req.params.id));
   res.status(200).json({ building });
 }

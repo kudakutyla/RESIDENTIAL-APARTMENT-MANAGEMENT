@@ -15,7 +15,7 @@ export async function listApartmentsForUser(user: { id: string; role: string }) 
     );
     return rows;
   }
-  const { rows } = await query(
+  const { rows } = await query<{ id: string }>(
     `SELECT a.*, b.name as building_name FROM apartments a JOIN buildings b ON b.id = a.building_id WHERE tenant_id = $1`,
     [user.id],
   );

@@ -18,14 +18,14 @@ export async function postMaintenance(req: Request, res: Response) {
 }
 
 export async function getMaintenance(req: Request, res: Response) {
-  const request = await getMaintenanceById(req.user!, req.params.id);
+  const request = await getMaintenanceById(req.user!, String(req.params.id));
   res.status(200).json({ request });
 }
 
 export async function postAssignContractor(req: Request, res: Response) {
   const request = await assignContractor({
     actorUser: req.user!,
-    requestId: req.params.id,
+    requestId: String(req.params.id),
     contractorId: req.body.contractorId,
   });
   res.status(200).json({ request });
@@ -34,7 +34,7 @@ export async function postAssignContractor(req: Request, res: Response) {
 export async function postMaintenanceUpdate(req: Request, res: Response) {
   const request = await addMaintenanceUpdate({
     actorUser: req.user!,
-    requestId: req.params.id,
+    requestId: String(req.params.id),
     message: req.body.message,
     status: req.body.status,
   });

@@ -7,6 +7,6 @@ export async function getNotifications(req: Request, res: Response) {
 }
 
 export async function markRead(req: Request, res: Response) {
-  const notification = await markNotificationRead(req.user!.id, req.params.id);
+  const notification = await markNotificationRead(req.user!.id, String(req.params.id));
   res.status(200).json({ notification });
 }

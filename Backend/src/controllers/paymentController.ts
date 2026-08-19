@@ -12,7 +12,7 @@ export async function uploadProof(req: Request, res: Response) {
   if (!req.file) throw new HttpError(400, "File is required");
   const payment = await uploadPaymentProof({
     user: req.user!,
-    paymentId: req.params.id,
+    paymentId: String(req.params.id),
     filePath: path.resolve(req.file.path),
     fileName: req.file.filename,
   });
@@ -22,7 +22,7 @@ export async function uploadProof(req: Request, res: Response) {
 export async function patchVerifyPayment(req: Request, res: Response) {
   const payment = await verifyPayment({
     actorUserId: req.user!.id,
-    paymentId: req.params.id,
+    paymentId: String(req.params.id),
     status: req.body.status,
   });
   res.status(200).json({ payment });
