@@ -5,7 +5,8 @@ import multer from "multer";
 import { env } from "../config/env";
 import { HttpError } from "./httpError";
 
-const uploadRoot = env.isProduction
+const isServerlessRuntime = env.isProduction || process.env.VERCEL === "1";
+const uploadRoot = isServerlessRuntime
   ? path.join(os.tmpdir(), "homenest-uploads")
   : path.resolve(process.cwd(), env.UPLOAD_DIR);
 if (!fs.existsSync(uploadRoot)) {
