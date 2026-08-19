@@ -1,10 +1,13 @@
 import fs from "fs";
+import os from "os";
 import path from "path";
 import multer from "multer";
 import { env } from "../config/env";
 import { HttpError } from "./httpError";
 
-const uploadRoot = path.resolve(process.cwd(), env.UPLOAD_DIR);
+const uploadRoot = env.isProduction
+  ? path.join(os.tmpdir(), "homenest-uploads")
+  : path.resolve(process.cwd(), env.UPLOAD_DIR);
 if (!fs.existsSync(uploadRoot)) {
   fs.mkdirSync(uploadRoot, { recursive: true });
 }
