@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { loginSchema } from "@/lib/formSchemas";
 import { authService } from "@/services/authService";
 import { useAuth } from "@/hooks/useAuth";
+import { getErrorMessage } from "@/lib/utils";
 import { z } from "zod";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -33,8 +34,8 @@ export default function LoginPage() {
       await refresh();
       toast.success("Logged in successfully.");
       router.push("/portal");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to login.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to login."));
     }
   };
 

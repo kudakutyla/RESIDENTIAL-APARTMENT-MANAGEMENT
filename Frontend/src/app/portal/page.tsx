@@ -11,6 +11,7 @@ import { authService } from "@/services/authService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BrandMark } from "@/components/brand-mark";
+import { getErrorMessage } from "@/lib/utils";
 
 const PIE_COLORS = ["#c76b4a", "#4f5d45", "#d9b98c", "#8f5b3d", "#6f7f63"];
 
@@ -76,7 +77,7 @@ export default function PortalPage() {
         { title: "Apartment", value: data.apartment?.apartment_number || "Not assigned" },
         { title: "Building", value: data.apartment?.building_name || "N/A" },
         { title: "Documents", value: String(data.documentCount || 0) },
-        { title: "Maintenance Entries", value: String((data.maintenanceByStatus || []).reduce((sum: number, x: any) => sum + Number(x.count), 0)) },
+        { title: "Maintenance Entries", value: String((data.maintenanceByStatus || []).reduce((sum: number, x) => sum + Number(x.count), 0)) },
       ];
     }
     if (user?.role === "MANAGER") {
@@ -132,8 +133,8 @@ export default function PortalPage() {
       setMaintenanceForm({ apartmentId: "", title: "", description: "", category: "Plumbing", priority: "Medium" });
       await queryClient.invalidateQueries({ queryKey: ["maintenance"] });
       toast.success("Maintenance request submitted successfully.");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to submit maintenance request.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to submit maintenance request."));
     }
   };
 
@@ -143,8 +144,8 @@ export default function PortalPage() {
       setSecurityForm({ title: "", description: "", location: "", priority: "Medium" });
       await queryClient.invalidateQueries({ queryKey: ["security"] });
       toast.success("Security report submitted successfully.");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to submit security report.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to submit security report."));
     }
   };
 
@@ -153,8 +154,8 @@ export default function PortalPage() {
       await platformService.updateProfile(profileForm);
       await refresh();
       toast.success("Profile updated successfully.");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to update profile.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to update profile."));
     }
   };
 
@@ -168,8 +169,8 @@ export default function PortalPage() {
       setStaffForm({ fullName: "", email: "", phone: "", password: "", role: "MANAGER" });
       await queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("Staff account created successfully.");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to create staff account.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to create staff account."));
     }
   };
 
@@ -179,7 +180,7 @@ export default function PortalPage() {
       return;
     }
 
-    const apartment = apartments.data?.apartments?.find((item: any) => item.id === apartmentAssignment.apartmentId);
+    const apartment = apartments.data?.apartments?.find((item) => item.id === apartmentAssignment.apartmentId);
     if (!apartment) {
       toast.error("Apartment not found.");
       return;
@@ -201,8 +202,8 @@ export default function PortalPage() {
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
       ]);
       toast.success("Apartment assigned successfully.");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to assign apartment.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to assign apartment."));
     }
   };
 
@@ -216,8 +217,8 @@ export default function PortalPage() {
       setPaymentUpload({ paymentId: "", file: null });
       await queryClient.invalidateQueries({ queryKey: ["payments"] });
       toast.success("Payment proof uploaded successfully.");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to upload payment proof.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to upload payment proof."));
     }
   };
 
@@ -236,8 +237,8 @@ export default function PortalPage() {
       setDocumentUpload({ documentName: "", documentType: "ID Document", file: null });
       await queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Document uploaded successfully.");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to upload document.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to upload document."));
     }
   };
 
@@ -248,8 +249,8 @@ export default function PortalPage() {
     try {
       await authService.changePassword({ currentPassword, newPassword, confirmNewPassword: newPassword });
       toast.success("Password changed successfully.");
-    } catch (error: any) {
-      toast.error(error.message || "Unable to change password.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to change password."));
     }
   };
 
@@ -283,7 +284,7 @@ export default function PortalPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={dashboard.data.dashboard.maintenanceByStatus} dataKey="count" nameKey="status" outerRadius={100}>
-                    {dashboard.data.dashboard.maintenanceByStatus.map((_: any, i: number) => (
+                    {dashboard.data.dashboard.maintenanceByStatus.map((_, i: number) => (
                       <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
                   </Pie>
@@ -316,7 +317,7 @@ export default function PortalPage() {
             <p className="mt-3 text-sm">Loading...</p>
           ) : maintenance.data?.requests.length ? (
             <ul className="mt-3 space-y-2 text-sm">
-              {maintenance.data.requests.slice(0, 8).map((item: any) => (
+              {maintenance.data.requests.slice(0, 8).map((item) => (
                 <li key={item.id} className="rounded border border-brand-sand/40 p-2">
                   <p className="font-medium">{item.title}</p>
                   <p className="text-brand-charcoal/70">{item.status} - {item.priority}</p>
@@ -357,7 +358,7 @@ export default function PortalPage() {
           <h2 className="text-lg">Notifications</h2>
           {notifications.data?.notifications.length ? (
             <ul className="mt-3 space-y-2 text-sm">
-              {notifications.data.notifications.slice(0, 10).map((n: any) => (
+              {notifications.data.notifications.slice(0, 10).map((n) => (
                 <li key={n.id} className="flex items-center justify-between rounded border border-brand-sand/40 p-2">
                   <div>
                     <p className="font-medium">{n.title}</p>
@@ -381,7 +382,7 @@ export default function PortalPage() {
           <h2 className="text-lg">Payments</h2>
           {payments.data?.payments.length ? (
             <ul className="mt-3 space-y-2 text-sm">
-              {payments.data.payments.slice(0, 8).map((p: any) => (
+              {payments.data.payments.slice(0, 8).map((p) => (
                 <li key={p.id} className="rounded border border-brand-sand/40 p-2">
                   {p.month_label} - ${p.amount} - {p.status}
                 </li>
@@ -399,7 +400,7 @@ export default function PortalPage() {
               onChange={(e) => setPaymentUpload((prev) => ({ ...prev, paymentId: e.target.value }))}
             >
               <option value="">Select payment</option>
-              {(payments.data?.payments || []).map((payment: any) => (
+              {(payments.data?.payments || []).map((payment) => (
                 <option key={payment.id} value={payment.id}>
                   {payment.month_label} - {payment.status} - ${payment.amount}
                 </option>
@@ -418,7 +419,7 @@ export default function PortalPage() {
           <h2 className="text-lg">Documents</h2>
           {documents.data?.documents.length ? (
             <ul className="mt-3 space-y-2 text-sm">
-              {documents.data.documents.slice(0, 8).map((doc: any) => (
+              {documents.data.documents.slice(0, 8).map((doc) => (
                 <li key={doc.id} className="rounded border border-brand-sand/40 p-2">
                   {doc.document_name} - {doc.document_type} - {doc.status}
                 </li>
@@ -461,7 +462,7 @@ export default function PortalPage() {
           <h2 className="text-lg">Security Reports</h2>
           {security.data?.reports.length ? (
             <ul className="mt-3 space-y-2 text-sm">
-              {security.data.reports.slice(0, 8).map((report: any) => (
+              {security.data.reports.slice(0, 8).map((report) => (
                 <li key={report.id} className="rounded border border-brand-sand/40 p-2">
                   {report.title} - {report.status}
                 </li>
@@ -502,7 +503,7 @@ export default function PortalPage() {
           <h2 className="text-lg">Announcements</h2>
           {announcements.data?.announcements.length ? (
             <ul className="mt-3 space-y-2 text-sm">
-              {announcements.data.announcements.slice(0, 8).map((item: any) => (
+              {announcements.data.announcements.slice(0, 8).map((item) => (
                 <li key={item.id} className="rounded border border-brand-sand/40 p-2">
                   <p className="font-medium">{item.title}</p>
                   <p className="text-brand-charcoal/70">{item.message}</p>
@@ -528,7 +529,7 @@ export default function PortalPage() {
             <h2 className="text-lg">Users</h2>
             {users.data?.users.length ? (
               <ul className="mt-3 space-y-2 text-sm">
-                {users.data.users.slice(0, 15).map((u: any) => (
+                {users.data.users.slice(0, 15).map((u) => (
                   <li key={u.id} className="rounded border border-brand-sand/40 p-2">{u.full_name} - {u.email} - {u.role}</li>
                 ))}
               </ul>
@@ -568,7 +569,7 @@ export default function PortalPage() {
               onChange={(e) => setApartmentAssignment((prev) => ({ ...prev, apartmentId: e.target.value }))}
             >
               <option value="">Select apartment</option>
-              {(apartments.data?.apartments || []).map((apt: any) => (
+              {(apartments.data?.apartments || []).map((apt) => (
                 <option key={apt.id} value={apt.id}>
                   {apt.apartment_number} - {apt.building_name} ({apt.status})
                 </option>
@@ -581,8 +582,8 @@ export default function PortalPage() {
             >
               <option value="">Select tenant</option>
               {(users.data?.users || [])
-                .filter((item: any) => item.role === "TENANT")
-                .map((tenant: any) => (
+                .filter((item) => item.role === "TENANT")
+                .map((tenant) => (
                   <option key={tenant.id} value={tenant.id}>
                     {tenant.full_name || tenant.fullName} - {tenant.email}
                   </option>
@@ -598,7 +599,7 @@ export default function PortalPage() {
           <h2 className="text-lg">Audit Logs</h2>
           {audits.data?.logs.length ? (
             <ul className="mt-3 space-y-2 text-sm">
-              {audits.data.logs.slice(0, 15).map((log: any) => (
+              {audits.data.logs.slice(0, 15).map((log) => (
                 <li key={log.id} className="rounded border border-brand-sand/40 p-2">{log.action} - {log.entity_type}</li>
               ))}
             </ul>
