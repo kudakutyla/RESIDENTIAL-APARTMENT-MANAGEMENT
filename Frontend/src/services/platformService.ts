@@ -4,8 +4,8 @@ type DashboardPoint = { category?: string; status?: string; count: number | stri
 type DashboardData = {
   apartment?: { apartment_number?: string; building_name?: string };
   documentCount?: number;
-  maintenanceByStatus: DashboardPoint[];
-  maintenanceByCategory: DashboardPoint[];
+  maintenanceByStatus?: DashboardPoint[];
+  maintenanceByCategory?: DashboardPoint[];
   buildings?: number;
   apartments?: number;
   occupied?: number;
@@ -16,15 +16,27 @@ type DashboardData = {
   high_priority?: number;
   summary?: { total_buildings?: number; total_tenants?: number; open_maintenance?: number; pending_payments?: number };
 };
-type MaintenanceRequest = { id: string; title: string; status: string; priority: string };
+type MaintenanceRequest = {
+  id: string;
+  title: string;
+  description?: string;
+  category?: string;
+  status: string;
+  priority: string;
+  apartment_id?: string;
+  building_id?: string;
+  tenant_id?: string;
+  assigned_contractor_id?: string | null;
+};
 type Apartment = { id: string; building_id?: string; apartment_number: string; building_name?: string; floor: number; bedrooms: number; monthly_rent: number; status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE" };
-type Payment = { id: string; month_label: string; amount: number; status: string };
+type Payment = { id: string; month_label: string; amount: number; status: string; tenant_name?: string };
 type Document = { id: string; document_name: string; document_type: string; status: string };
 type SecurityReport = { id: string; title: string; status: string };
 type Announcement = { id: string; title: string; message: string };
 type Notification = { id: string; title: string; message: string; is_read: boolean };
 type AuditLog = { id: string; action: string; entity_type: string };
 type UserRecord = { id: string; full_name?: string; fullName?: string; email: string; role: string };
+type Contractor = { id: string; user_id: string; full_name: string; email: string; company_name: string; phone: string; specialization: string; status: string };
 type ApiEntity = Record<string, unknown>;
 
 export const platformService = {
@@ -37,6 +49,13 @@ export const platformService = {
     category: string;
     priority: string;
   }) => apiClient.post<{ request: ApiEntity }>("/maintenance", payload),
+  assignContractor: (requestId: string, contractorId: string) =>
+    apiClient.post<{ request: ApiEntity }>(`/maintenance/${requestId}/assign`, { contractorId }),
+  addMaintenanceUpdate: (requestId: string, payload: { message: string; status?: string }) =>
+    apiClient.post<{ request: ApiEntity }>(`/maintenance/${requestId}/updates`, payload),
+  contractors: () => apiClient.get<{ contractors: Contractor[] }>("/contractors"),
+  createContractor: (payload: { userId: string; companyName: string; phone: string; specialization: string }) =>
+    apiClient.post<{ contractor: Contractor }>("/contractors", payload),
   buildings: () => apiClient.get<{ buildings: ApiEntity[] }>("/buildings"),
   apartments: () => apiClient.get<{ apartments: Apartment[] }>("/apartments"),
   updateApartment: (id: string, payload: {
@@ -55,6 +74,8 @@ export const platformService = {
     formData.append("file", file);
     return apiClient.post<{ payment: Payment }>(`/payments/${paymentId}/proof`, formData);
   },
+  verifyPayment: (paymentId: string, status: "Verified" | "Rejected") =>
+    apiClient.patch<{ payment: Payment }>(`/payments/${paymentId}/verify`, { status }),
   uploadDocument: (payload: {
     documentName: string;
     documentType: string;
