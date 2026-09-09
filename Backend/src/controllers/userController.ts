@@ -7,8 +7,10 @@ export async function createStaff(req: Request, res: Response) {
 }
 
 export async function getUsers(req: Request, res: Response) {
+  // Managers may only browse contractor accounts (to register contractor profiles), not the full directory.
+  const role = req.user!.role === "MANAGER" ? "CONTRACTOR" : (req.query.role as any);
   const users = await adminListUsers({
-    role: req.query.role as any,
+    role,
     q: req.query.q as string | undefined,
   });
   res.status(200).json({ users });

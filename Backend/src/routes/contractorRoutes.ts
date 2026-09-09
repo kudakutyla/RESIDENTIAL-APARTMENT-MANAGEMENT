@@ -8,4 +8,4 @@ export const contractorRouter = Router();
 
 contractorRouter.use(authenticateToken);
 contractorRouter.get("/", authorizeRoles("ADMIN", "MANAGER"), asyncHandler(getContractors));
-contractorRouter.post("/", authorizeRoles("ADMIN"), asyncHandler(postContractor));
+contractorRouter.post("/", authorizeRoles("ADMIN", "MANAGER"), asyncHandler(postContractor));

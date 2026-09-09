@@ -8,7 +8,7 @@ import { createStaff, getUsers, updateUserStatus } from "../controllers/userCont
 
 export const userRouter = Router();
 
-userRouter.use(authenticateToken, authorizeRoles("ADMIN"));
-userRouter.get("/", asyncHandler(getUsers));
-userRouter.post("/", validateBody(createStaffSchema), asyncHandler(createStaff));
-userRouter.patch("/:id/status", validateBody(userStatusSchema), asyncHandler(updateUserStatus));
+userRouter.use(authenticateToken);
+userRouter.get("/", authorizeRoles("ADMIN", "MANAGER"), asyncHandler(getUsers));
+userRouter.post("/", authorizeRoles("ADMIN"), validateBody(createStaffSchema), asyncHandler(createStaff));
+userRouter.patch("/:id/status", authorizeRoles("ADMIN"), validateBody(userStatusSchema), asyncHandler(updateUserStatus));
