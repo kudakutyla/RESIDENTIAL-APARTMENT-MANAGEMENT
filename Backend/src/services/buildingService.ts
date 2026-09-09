@@ -21,6 +21,8 @@ export async function listBuildingsForUser(user: { id: string; role: string }) {
   return rows;
 }
 
+const APARTMENTS_PER_BUILDING = 45;
+
 export async function createBuilding(input: {
   actorUserId: string;
   name: string;
@@ -33,8 +35,18 @@ export async function createBuilding(input: {
      VALUES ($1,$2,$3,$4) RETURNING *`,
     [input.name, input.address, input.description ?? null, input.managerId ?? null],
   );
-  await logAuditEvent({ actorUserId: input.actorUserId, action: "BUILDING_CREATED", entityType: "BUILDING", entityId: rows[0].id });
-  return rows[0];
+  const building = rows[0];
+
+  for (let i = 1; i <= APARTMENTS_PER_BUILDING; i++) {
+    await query(
+      `INSERT INTO apartments (building_id, apartment_number, floor, bedrooms, monthly_rent, status)
+       VALUES ($1,$2,$3,$4,$5,'AVAILABLE')`,
+      [building.id, `A-${i}`, Math.ceil(i / 4), 2, 900],
+    );
+  }
+
+  await logAuditEvent({ actorUserId: input.actorUserId, action: "BUILDING_CREATED", entityType: "BUILDING", entityId: building.id });
+  return building;
 }
 
 export async function updateBuilding(input: {

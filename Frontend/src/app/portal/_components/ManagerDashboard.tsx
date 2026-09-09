@@ -19,6 +19,7 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
   const maintenance = useQuery({ queryKey: ["maintenance"], queryFn: () => platformService.maintenanceList() });
   const contractors = useQuery({ queryKey: ["contractors"], queryFn: () => platformService.contractors() });
   const payments = useQuery({ queryKey: ["payments"], queryFn: () => platformService.payments() });
+  const documents = useQuery({ queryKey: ["documents"], queryFn: () => platformService.documents() });
   const reports = useQuery({ queryKey: ["reports"], queryFn: () => platformService.reports() });
 
   const cards = useMemo(() => {
@@ -35,6 +36,11 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
   const pendingPayments = useMemo(
     () => (payments.data?.payments || []).filter((p) => p.status === "Pending"),
     [payments.data],
+  );
+
+  const pendingDocuments = useMemo(
+    () => (documents.data?.documents || []).filter((d) => d.status === "Uploaded"),
+    [documents.data],
   );
 
   const assignContractor = async (requestId: string) => {
@@ -59,6 +65,16 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
       toast.success(`Payment ${status.toLowerCase()}.`);
     } catch (error) {
       toast.error(getErrorMessage(error, "Unable to update payment."));
+    }
+  };
+
+  const reviewDocument = async (documentId: string, status: "Approved" | "Rejected") => {
+    try {
+      await platformService.updateDocumentStatus(documentId, status);
+      await queryClient.invalidateQueries({ queryKey: ["documents"] });
+      toast.success(`Document ${status.toLowerCase()}.`);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to update document."));
     }
   };
 
@@ -153,6 +169,26 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
       </section>
 
       <section className="mt-6 grid gap-6 lg:grid-cols-2">
+        <article className="rounded-xl bg-white p-4">
+          <h2 className="text-lg">Documents Awaiting Review</h2>
+          {pendingDocuments.length ? (
+            <ul className="mt-3 space-y-2 text-sm">
+              {pendingDocuments.slice(0, 10).map((d) => (
+                <li key={d.id} className="rounded border border-brand-sand/40 p-2">
+                  <p className="font-medium">{d.tenant_name || "Tenant"} - {d.document_name}</p>
+                  <p className="text-brand-charcoal/70">{d.document_type}</p>
+                  <div className="mt-2 flex gap-2">
+                    <Button onClick={() => reviewDocument(d.id, "Approved")}>Approve</Button>
+                    <Button variant="secondary" onClick={() => reviewDocument(d.id, "Rejected")}>Reject</Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm">No documents pending review.</p>
+          )}
+        </article>
+
         <article className="rounded-xl bg-white p-4">
           <h2 className="text-lg">Register Contractor</h2>
           <div className="mt-3 space-y-2">

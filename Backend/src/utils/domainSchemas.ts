@@ -80,3 +80,7 @@ export const profileUpdateSchema = z.object({
   fullName: z.string().min(2),
   phone: z.string().min(6),
 });
+
+export const documentStatusSchema = z.object({
+  status: z.enum(["Uploaded", "Approved", "Rejected"]),
+});

@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import path from "path";
 import { HttpError } from "../utils/httpError";
-import { listDocumentsForUser, uploadDocument } from "../services/documentService";
+import { listDocumentsForUser, updateDocumentStatus, uploadDocument } from "../services/documentService";
 
 export async function listDocuments(req: Request, res: Response) {
   const documents = await listDocumentsForUser(req.user!);
@@ -19,4 +19,13 @@ export async function postDocument(req: Request, res: Response) {
     fileName: req.file.filename,
   });
   res.status(201).json({ document });
+}
+
+export async function patchDocumentStatus(req: Request, res: Response) {
+  const document = await updateDocumentStatus({
+    actorUser: req.user!,
+    documentId: String(req.params.id),
+    status: req.body.status,
+  });
+  res.status(200).json({ document });
 }

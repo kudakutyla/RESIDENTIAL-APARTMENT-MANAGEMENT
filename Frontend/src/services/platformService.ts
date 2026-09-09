@@ -29,8 +29,9 @@ type MaintenanceRequest = {
   assigned_contractor_id?: string | null;
 };
 type Apartment = { id: string; building_id?: string; apartment_number: string; building_name?: string; floor: number; bedrooms: number; monthly_rent: number; status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE" };
+type Building = { id: string; name: string; address: string; description?: string | null; manager_id?: string | null; is_active: boolean };
 type Payment = { id: string; month_label: string; amount: number; status: string; tenant_name?: string };
-type Document = { id: string; document_name: string; document_type: string; status: string };
+type Document = { id: string; document_name: string; document_type: string; status: string; tenant_name?: string };
 type SecurityReport = { id: string; title: string; status: string };
 type Announcement = { id: string; title: string; message: string };
 type Notification = { id: string; title: string; message: string; is_read: boolean };
@@ -56,7 +57,11 @@ export const platformService = {
   contractors: () => apiClient.get<{ contractors: Contractor[] }>("/contractors"),
   createContractor: (payload: { fullName: string; email: string; phone: string; password: string }) =>
     apiClient.post<{ user: UserRecord; contractor: Contractor }>("/contractors", payload),
-  buildings: () => apiClient.get<{ buildings: ApiEntity[] }>("/buildings"),
+  buildings: () => apiClient.get<{ buildings: Building[] }>("/buildings"),
+  createBuilding: (payload: { name: string; address: string; description?: string; managerId?: string }) =>
+    apiClient.post<{ building: Building }>("/buildings", payload),
+  updateBuilding: (id: string, payload: { name: string; address: string; description?: string; managerId?: string }) =>
+    apiClient.put<{ building: Building }>(`/buildings/${id}`, payload),
   apartments: () => apiClient.get<{ apartments: Apartment[] }>("/apartments"),
   updateApartment: (id: string, payload: {
     buildingId?: string;
@@ -91,6 +96,8 @@ export const platformService = {
     }
     return apiClient.post<{ document: Document }>("/documents", formData);
   },
+  updateDocumentStatus: (documentId: string, status: "Approved" | "Rejected") =>
+    apiClient.patch<{ document: Document }>(`/documents/${documentId}/status`, { status }),
   securityReports: () => apiClient.get<{ reports: SecurityReport[] }>("/security-reports"),
   createSecurityReport: (payload: {
     title: string;

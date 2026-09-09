@@ -27,10 +27,13 @@ export function AdminDashboard({ user, onProfileUpdated }: { user: User; onProfi
     tenantId: "",
   });
   const [assignSelection, setAssignSelection] = useState<Record<string, string>>({});
+  const [buildingManagerSelection, setBuildingManagerSelection] = useState<Record<string, string>>({});
+  const [newBuilding, setNewBuilding] = useState({ name: "", address: "", description: "", managerId: "" });
 
   const dashboard = useQuery({ queryKey: ["dashboard"], queryFn: () => platformService.dashboard() });
   const maintenance = useQuery({ queryKey: ["maintenance"], queryFn: () => platformService.maintenanceList() });
   const apartments = useQuery({ queryKey: ["apartments"], queryFn: () => platformService.apartments() });
+  const buildings = useQuery({ queryKey: ["buildings"], queryFn: () => platformService.buildings() });
   const payments = useQuery({ queryKey: ["payments"], queryFn: () => platformService.payments() });
   const reports = useQuery({ queryKey: ["reports"], queryFn: () => platformService.reports() });
   const users = useQuery({ queryKey: ["users"], queryFn: () => platformService.users() });
@@ -51,6 +54,11 @@ export function AdminDashboard({ user, onProfileUpdated }: { user: User; onProfi
   const pendingPayments = useMemo(
     () => (payments.data?.payments || []).filter((p) => p.status === "Pending"),
     [payments.data],
+  );
+
+  const managerUsers = useMemo(
+    () => (users.data?.users || []).filter((u) => u.role === "MANAGER"),
+    [users.data],
   );
 
   const createStaff = async () => {
@@ -121,6 +129,47 @@ export function AdminDashboard({ user, onProfileUpdated }: { user: User; onProfi
       toast.success(`Payment ${status.toLowerCase()}.`);
     } catch (error) {
       toast.error(getErrorMessage(error, "Unable to update payment."));
+    }
+  };
+
+  const assignBuildingManager = async (buildingId: string) => {
+    const managerId = buildingManagerSelection[buildingId];
+    const building = buildings.data?.buildings.find((b) => b.id === buildingId);
+    if (!building) return;
+    try {
+      await platformService.updateBuilding(buildingId, {
+        name: building.name,
+        address: building.address,
+        description: building.description ?? undefined,
+        managerId: managerId || undefined,
+      });
+      await queryClient.invalidateQueries({ queryKey: ["buildings"] });
+      toast.success("Building manager updated successfully.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to update building manager."));
+    }
+  };
+
+  const createBuilding = async () => {
+    if (!newBuilding.name || !newBuilding.address) {
+      toast.error("Enter a building name and address.");
+      return;
+    }
+    try {
+      await platformService.createBuilding({
+        name: newBuilding.name,
+        address: newBuilding.address,
+        description: newBuilding.description || undefined,
+        managerId: newBuilding.managerId || undefined,
+      });
+      setNewBuilding({ name: "", address: "", description: "", managerId: "" });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["buildings"] }),
+        queryClient.invalidateQueries({ queryKey: ["apartments"] }),
+      ]);
+      toast.success("Building created with 45 apartments.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to create building."));
     }
   };
 
@@ -255,6 +304,57 @@ export function AdminDashboard({ user, onProfileUpdated }: { user: User; onProfi
               <option value="ADMIN">ADMIN</option>
             </select>
             <Button onClick={createStaff}>Create Account</Button>
+          </div>
+        </article>
+      </section>
+
+      <section className="mt-6 grid gap-6 lg:grid-cols-2">
+        <article className="rounded-xl bg-white p-4">
+          <h2 className="text-lg">Buildings</h2>
+          {buildings.data?.buildings.length ? (
+            <ul className="mt-3 space-y-2 text-sm">
+              {buildings.data.buildings.map((b) => (
+                <li key={b.id} className="rounded border border-brand-sand/40 p-2">
+                  <p className="font-medium">{b.name}</p>
+                  <p className="text-brand-charcoal/70">{b.address}</p>
+                  <div className="mt-2 flex gap-2">
+                    <select
+                      className="h-9 flex-1 rounded-md border border-brand-sand/70 bg-white px-2 text-sm"
+                      value={buildingManagerSelection[b.id] ?? b.manager_id ?? ""}
+                      onChange={(e) => setBuildingManagerSelection((prev) => ({ ...prev, [b.id]: e.target.value }))}
+                    >
+                      <option value="">No manager</option>
+                      {managerUsers.map((m) => (
+                        <option key={m.id} value={m.id}>{m.full_name || m.fullName} - {m.email}</option>
+                      ))}
+                    </select>
+                    <Button onClick={() => assignBuildingManager(b.id)}>Save</Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm">No buildings found.</p>
+          )}
+        </article>
+        <article className="rounded-xl bg-white p-4">
+          <h2 className="text-lg">Create Building</h2>
+          <p className="mt-1 text-xs text-brand-charcoal/60">Automatically creates 45 apartments for the new building.</p>
+          <div className="mt-3 space-y-2">
+            <Input placeholder="Building name" value={newBuilding.name} onChange={(e) => setNewBuilding((prev) => ({ ...prev, name: e.target.value }))} />
+            <Input placeholder="Address" value={newBuilding.address} onChange={(e) => setNewBuilding((prev) => ({ ...prev, address: e.target.value }))} />
+            <Input placeholder="Description (optional)" value={newBuilding.description} onChange={(e) => setNewBuilding((prev) => ({ ...prev, description: e.target.value }))} />
+            <select
+              className="h-10 w-full rounded-md border border-brand-sand/70 bg-white px-3"
+              value={newBuilding.managerId}
+              onChange={(e) => setNewBuilding((prev) => ({ ...prev, managerId: e.target.value }))}
+            >
+              <option value="">No manager</option>
+              {managerUsers.map((m) => (
+                <option key={m.id} value={m.id}>{m.full_name || m.fullName} - {m.email}</option>
+              ))}
+            </select>
+            <Button onClick={createBuilding}>Create Building</Button>
           </div>
         </article>
       </section>
