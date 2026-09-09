@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.contractorRouter = void 0;
+const express_1 = require("express");
+const asyncHandler_1 = require("../middleware/asyncHandler");
+const authenticate_1 = require("../middleware/authenticate");
+const authorize_1 = require("../middleware/authorize");
+const contractorController_1 = require("../controllers/contractorController");
+exports.contractorRouter = (0, express_1.Router)();
+exports.contractorRouter.use(authenticate_1.authenticateToken);
+exports.contractorRouter.get("/", (0, authorize_1.authorizeRoles)("ADMIN", "MANAGER"), (0, asyncHandler_1.asyncHandler)(contractorController_1.getContractors));
+exports.contractorRouter.post("/", (0, authorize_1.authorizeRoles)("ADMIN"), (0, asyncHandler_1.asyncHandler)(contractorController_1.postContractor));

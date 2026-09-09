@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.paymentRouter = void 0;
+const express_1 = require("express");
+const asyncHandler_1 = require("../middleware/asyncHandler");
+const authenticate_1 = require("../middleware/authenticate");
+const authorize_1 = require("../middleware/authorize");
+const validate_1 = require("../middleware/validate");
+const domainSchemas_1 = require("../utils/domainSchemas");
+const upload_1 = require("../utils/upload");
+const paymentController_1 = require("../controllers/paymentController");
+exports.paymentRouter = (0, express_1.Router)();
+exports.paymentRouter.use(authenticate_1.authenticateToken);
+exports.paymentRouter.get("/", (0, asyncHandler_1.asyncHandler)(paymentController_1.listPayments));
+exports.paymentRouter.post("/:id/proof", upload_1.upload.single("file"), (0, asyncHandler_1.asyncHandler)(paymentController_1.uploadProof));
+exports.paymentRouter.patch("/:id/verify", (0, authorize_1.authorizeRoles)("ADMIN", "MANAGER"), (0, validate_1.validateBody)(domainSchemas_1.paymentVerifySchema), (0, asyncHandler_1.asyncHandler)(paymentController_1.patchVerifyPayment));

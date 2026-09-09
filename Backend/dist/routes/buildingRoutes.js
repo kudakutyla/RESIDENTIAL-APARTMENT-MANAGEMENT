@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.buildingRouter = void 0;
+const express_1 = require("express");
+const buildingController_1 = require("../controllers/buildingController");
+const asyncHandler_1 = require("../middleware/asyncHandler");
+const authenticate_1 = require("../middleware/authenticate");
+const authorize_1 = require("../middleware/authorize");
+const validate_1 = require("../middleware/validate");
+const domainSchemas_1 = require("../utils/domainSchemas");
+exports.buildingRouter = (0, express_1.Router)();
+exports.buildingRouter.use(authenticate_1.authenticateToken);
+exports.buildingRouter.get("/", (0, asyncHandler_1.asyncHandler)(buildingController_1.listBuildings));
+exports.buildingRouter.post("/", (0, authorize_1.authorizeRoles)("ADMIN"), (0, validate_1.validateBody)(domainSchemas_1.buildingSchema), (0, asyncHandler_1.asyncHandler)(buildingController_1.postBuilding));
+exports.buildingRouter.put("/:id", (0, authorize_1.authorizeRoles)("ADMIN"), (0, validate_1.validateBody)(domainSchemas_1.buildingSchema), (0, asyncHandler_1.asyncHandler)(buildingController_1.putBuilding));
+exports.buildingRouter.delete("/:id", (0, authorize_1.authorizeRoles)("ADMIN"), (0, asyncHandler_1.asyncHandler)(buildingController_1.deleteBuilding));

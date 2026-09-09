@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.maintenanceRouter = void 0;
+const express_1 = require("express");
+const asyncHandler_1 = require("../middleware/asyncHandler");
+const authenticate_1 = require("../middleware/authenticate");
+const validate_1 = require("../middleware/validate");
+const domainSchemas_1 = require("../utils/domainSchemas");
+const maintenanceController_1 = require("../controllers/maintenanceController");
+exports.maintenanceRouter = (0, express_1.Router)();
+exports.maintenanceRouter.use(authenticate_1.authenticateToken);
+exports.maintenanceRouter.get("/", (0, asyncHandler_1.asyncHandler)(maintenanceController_1.listMaintenance));
+exports.maintenanceRouter.post("/", (0, validate_1.validateBody)(domainSchemas_1.maintenanceCreateSchema), (0, asyncHandler_1.asyncHandler)(maintenanceController_1.postMaintenance));
+exports.maintenanceRouter.get("/:id", (0, asyncHandler_1.asyncHandler)(maintenanceController_1.getMaintenance));
+exports.maintenanceRouter.post("/:id/assign", (0, validate_1.validateBody)(domainSchemas_1.maintenanceAssignSchema), (0, asyncHandler_1.asyncHandler)(maintenanceController_1.postAssignContractor));
+exports.maintenanceRouter.post("/:id/updates", (0, validate_1.validateBody)(domainSchemas_1.maintenanceUpdateSchema), (0, asyncHandler_1.asyncHandler)(maintenanceController_1.postMaintenanceUpdate));

@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.profileRouter = void 0;
+const express_1 = require("express");
+const asyncHandler_1 = require("../middleware/asyncHandler");
+const authenticate_1 = require("../middleware/authenticate");
+const validate_1 = require("../middleware/validate");
+const domainSchemas_1 = require("../utils/domainSchemas");
+const profileController_1 = require("../controllers/profileController");
+exports.profileRouter = (0, express_1.Router)();
+exports.profileRouter.use(authenticate_1.authenticateToken);
+exports.profileRouter.patch("/", (0, validate_1.validateBody)(domainSchemas_1.profileUpdateSchema), (0, asyncHandler_1.asyncHandler)(profileController_1.patchProfile));

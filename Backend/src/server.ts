@@ -25,14 +25,20 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      if (!origin || env.FRONTEND_URLS.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
     credentials: true,
   }),
 );
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 
-app.get("/api/health", (_req, res) => {
+app.get("/api/health", (_req: express.Request, res: express.Response) => {
   res.status(200).json({ status: "ok", service: "homenest-backend" });
 });
 
@@ -55,10 +61,8 @@ app.use("/api/profile", profileRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-if (process.env.NODE_ENV !== "production") {
-  app.listen(env.PORT, () => {
-    console.log(`HomeNest backend listening on ${env.PORT}`);
-  });
-}
+app.listen(env.PORT, () => {
+  console.log(`HomeNest backend listening on ${env.PORT}`);
+});
 
 export default app;

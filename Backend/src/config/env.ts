@@ -10,7 +10,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default("7d"),
   COOKIE_NAME: z.string().default("homenest_token"),
-  FRONTEND_URL: z.string().url().default("http://localhost:3000"),
+  FRONTEND_URL: z.string().default("http://localhost:3000"),
   UPLOAD_DIR: z.string().default("uploads"),
   MAX_UPLOAD_MB: z.string().default("8"),
 });
@@ -25,4 +25,7 @@ export const env = {
   PORT: Number(parsed.data.PORT),
   MAX_UPLOAD_MB: Number(parsed.data.MAX_UPLOAD_MB),
   isProduction: parsed.data.NODE_ENV === "production",
+  FRONTEND_URLS: parsed.data.FRONTEND_URL.split(",")
+    .map((url) => url.trim().replace(/\/$/, ""))
+    .filter(Boolean),
 };

@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.apartmentRouter = void 0;
+const express_1 = require("express");
+const asyncHandler_1 = require("../middleware/asyncHandler");
+const authenticate_1 = require("../middleware/authenticate");
+const authorize_1 = require("../middleware/authorize");
+const validate_1 = require("../middleware/validate");
+const domainSchemas_1 = require("../utils/domainSchemas");
+const apartmentController_1 = require("../controllers/apartmentController");
+exports.apartmentRouter = (0, express_1.Router)();
+exports.apartmentRouter.use(authenticate_1.authenticateToken);
+exports.apartmentRouter.get("/", (0, asyncHandler_1.asyncHandler)(apartmentController_1.listApartments));
+exports.apartmentRouter.post("/", (0, authorize_1.authorizeRoles)("ADMIN"), (0, validate_1.validateBody)(domainSchemas_1.apartmentSchema), (0, asyncHandler_1.asyncHandler)(apartmentController_1.postApartment));
+exports.apartmentRouter.put("/:id", (0, authorize_1.authorizeRoles)("ADMIN"), (0, validate_1.validateBody)(domainSchemas_1.apartmentSchema), (0, asyncHandler_1.asyncHandler)(apartmentController_1.putApartment));

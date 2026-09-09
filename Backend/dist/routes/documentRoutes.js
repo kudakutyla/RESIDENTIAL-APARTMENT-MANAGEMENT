@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.documentRouter = void 0;
+const express_1 = require("express");
+const asyncHandler_1 = require("../middleware/asyncHandler");
+const authenticate_1 = require("../middleware/authenticate");
+const upload_1 = require("../utils/upload");
+const documentController_1 = require("../controllers/documentController");
+exports.documentRouter = (0, express_1.Router)();
+exports.documentRouter.use(authenticate_1.authenticateToken);
+exports.documentRouter.get("/", (0, asyncHandler_1.asyncHandler)(documentController_1.listDocuments));
+exports.documentRouter.post("/", upload_1.upload.single("file"), (0, asyncHandler_1.asyncHandler)(documentController_1.postDocument));

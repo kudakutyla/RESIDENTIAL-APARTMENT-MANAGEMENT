@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.announcementRouter = void 0;
+const express_1 = require("express");
+const asyncHandler_1 = require("../middleware/asyncHandler");
+const authenticate_1 = require("../middleware/authenticate");
+const authorize_1 = require("../middleware/authorize");
+const validate_1 = require("../middleware/validate");
+const domainSchemas_1 = require("../utils/domainSchemas");
+const announcementController_1 = require("../controllers/announcementController");
+exports.announcementRouter = (0, express_1.Router)();
+exports.announcementRouter.use(authenticate_1.authenticateToken);
+exports.announcementRouter.get("/", (0, asyncHandler_1.asyncHandler)(announcementController_1.listAnnouncements));
+exports.announcementRouter.post("/", (0, authorize_1.authorizeRoles)("ADMIN", "MANAGER"), (0, validate_1.validateBody)(domainSchemas_1.announcementSchema), (0, asyncHandler_1.asyncHandler)(announcementController_1.postAnnouncement));

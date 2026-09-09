@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.securityRouter = void 0;
+const express_1 = require("express");
+const asyncHandler_1 = require("../middleware/asyncHandler");
+const authenticate_1 = require("../middleware/authenticate");
+const authorize_1 = require("../middleware/authorize");
+const validate_1 = require("../middleware/validate");
+const domainSchemas_1 = require("../utils/domainSchemas");
+const securityController_1 = require("../controllers/securityController");
+exports.securityRouter = (0, express_1.Router)();
+exports.securityRouter.use(authenticate_1.authenticateToken);
+exports.securityRouter.get("/", (0, asyncHandler_1.asyncHandler)(securityController_1.listSecurity));
+exports.securityRouter.post("/", (0, authorize_1.authorizeRoles)("TENANT"), (0, validate_1.validateBody)(domainSchemas_1.securityReportCreateSchema), (0, asyncHandler_1.asyncHandler)(securityController_1.postSecurity));
+exports.securityRouter.patch("/:id", (0, authorize_1.authorizeRoles)("ADMIN", "MANAGER"), (0, validate_1.validateBody)(domainSchemas_1.securityReportStatusSchema), (0, asyncHandler_1.asyncHandler)(securityController_1.patchSecurity));
