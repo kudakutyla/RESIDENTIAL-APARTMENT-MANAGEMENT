@@ -1,6 +1,8 @@
-import { createUser, listUsers, setUserStatus } from "../repositories/userRepository";
+import { createUser, findUserByEmail, listUsers, setUserStatus } from "../repositories/userRepository";
 import { hashPassword } from "../utils/password";
 import { logAuditEvent } from "../utils/audit";
+import { sanitizeUser } from "./authService";
+import { HttpError } from "../utils/httpError";
 import type { Role } from "../types/auth";
 
 export async function adminCreateStaff(input: {
@@ -11,6 +13,11 @@ export async function adminCreateStaff(input: {
   password: string;
   role: Role;
 }) {
+  const existing = await findUserByEmail(input.email);
+  if (existing) {
+    throw new HttpError(409, "Email already exists");
+  }
+
   const passwordHash = await hashPassword(input.password);
   const user = await createUser({
     fullName: input.fullName,
@@ -26,7 +33,7 @@ export async function adminCreateStaff(input: {
     entityId: user.id,
     details: { role: user.role },
   });
-  return user;
+  return sanitizeUser(user);
 }
 
 export async function adminListUsers(filters: { role?: Role; q?: string }) {
