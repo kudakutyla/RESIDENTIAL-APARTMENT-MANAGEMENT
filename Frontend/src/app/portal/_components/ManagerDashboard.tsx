@@ -14,12 +14,14 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
   const queryClient = useQueryClient();
   const [assignSelection, setAssignSelection] = useState<Record<string, string>>({});
   const [contractorForm, setContractorForm] = useState({ fullName: "", email: "", phone: "", password: "" });
+  const [notificationForm, setNotificationForm] = useState({ recipientType: "TENANT" as "TENANT" | "CONTRACTOR", userId: "", title: "", message: "" });
 
   const dashboard = useQuery({ queryKey: ["dashboard"], queryFn: () => platformService.dashboard() });
   const maintenance = useQuery({ queryKey: ["maintenance"], queryFn: () => platformService.maintenanceList() });
   const contractors = useQuery({ queryKey: ["contractors"], queryFn: () => platformService.contractors() });
   const payments = useQuery({ queryKey: ["payments"], queryFn: () => platformService.payments() });
   const documents = useQuery({ queryKey: ["documents"], queryFn: () => platformService.documents() });
+  const apartments = useQuery({ queryKey: ["apartments"], queryFn: () => platformService.apartments() });
   const reports = useQuery({ queryKey: ["reports"], queryFn: () => platformService.reports() });
 
   const cards = useMemo(() => {
@@ -42,6 +44,13 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
     () => (documents.data?.documents || []).filter((d) => d.status === "Uploaded"),
     [documents.data],
   );
+
+  const tenantOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return (apartments.data?.apartments || [])
+      .filter((a) => a.tenant_id && !seen.has(a.tenant_id) && seen.add(a.tenant_id))
+      .map((a) => ({ id: a.tenant_id as string, label: `${a.tenant_name || "Tenant"} - ${a.apartment_number}` }));
+  }, [apartments.data]);
 
   const assignContractor = async (requestId: string) => {
     const contractorId = assignSelection[requestId];
@@ -75,6 +84,24 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
       toast.success(`Document ${status.toLowerCase()}.`);
     } catch (error) {
       toast.error(getErrorMessage(error, "Unable to update document."));
+    }
+  };
+
+  const sendNotification = async () => {
+    if (!notificationForm.userId || !notificationForm.title || !notificationForm.message) {
+      toast.error("Select a recipient and fill in the title and message.");
+      return;
+    }
+    try {
+      await platformService.sendNotification({
+        userId: notificationForm.userId,
+        title: notificationForm.title,
+        message: notificationForm.message,
+      });
+      setNotificationForm((prev) => ({ ...prev, userId: "", title: "", message: "" }));
+      toast.success("Notification sent successfully.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to send notification."));
     }
   };
 
@@ -132,6 +159,40 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
         </article>
 
         <NotificationsCard />
+      </section>
+
+      <section className="mt-6 grid gap-6 lg:grid-cols-2">
+        <article className="rounded-xl bg-white p-4">
+          <h2 className="text-lg">Send Notification</h2>
+          <div className="mt-3 space-y-2">
+            <select
+              className="h-10 w-full rounded-md border border-brand-sand/70 bg-white px-3"
+              value={notificationForm.recipientType}
+              onChange={(e) =>
+                setNotificationForm((prev) => ({ ...prev, recipientType: e.target.value as "TENANT" | "CONTRACTOR", userId: "" }))
+              }
+            >
+              <option value="TENANT">Tenant</option>
+              <option value="CONTRACTOR">Contractor</option>
+            </select>
+            <select
+              className="h-10 w-full rounded-md border border-brand-sand/70 bg-white px-3"
+              value={notificationForm.userId}
+              onChange={(e) => setNotificationForm((prev) => ({ ...prev, userId: e.target.value }))}
+            >
+              <option value="">Select recipient</option>
+              {(notificationForm.recipientType === "TENANT"
+                ? tenantOptions
+                : (contractors.data?.contractors || []).map((c) => ({ id: c.user_id, label: `${c.full_name} - ${c.phone}` }))
+              ).map((opt) => (
+                <option key={opt.id} value={opt.id}>{opt.label}</option>
+              ))}
+            </select>
+            <Input placeholder="Title" value={notificationForm.title} onChange={(e) => setNotificationForm((prev) => ({ ...prev, title: e.target.value }))} />
+            <Input placeholder="Message" value={notificationForm.message} onChange={(e) => setNotificationForm((prev) => ({ ...prev, message: e.target.value }))} />
+            <Button onClick={sendNotification}>Send Notification</Button>
+          </div>
+        </article>
       </section>
 
       <section className="mt-6 grid gap-6 lg:grid-cols-2">

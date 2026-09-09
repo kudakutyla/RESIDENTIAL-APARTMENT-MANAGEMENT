@@ -28,7 +28,7 @@ type MaintenanceRequest = {
   tenant_id?: string;
   assigned_contractor_id?: string | null;
 };
-type Apartment = { id: string; building_id?: string; apartment_number: string; building_name?: string; floor: number; bedrooms: number; monthly_rent: number; status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE" };
+type Apartment = { id: string; building_id?: string; apartment_number: string; building_name?: string; floor: number; bedrooms: number; monthly_rent: number; status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE"; tenant_id?: string | null; tenant_name?: string | null; tenant_email?: string | null };
 type Building = { id: string; name: string; address: string; description?: string | null; manager_id?: string | null; is_active: boolean };
 type Payment = { id: string; month_label: string; amount: number; status: string; tenant_name?: string };
 type Document = { id: string; document_name: string; document_type: string; status: string; tenant_name?: string };
@@ -107,6 +107,8 @@ export const platformService = {
   }) => apiClient.post<{ report: SecurityReport }>("/security-reports", payload),
   announcements: () => apiClient.get<{ announcements: Announcement[] }>("/announcements"),
   notifications: () => apiClient.get<{ notifications: Notification[] }>("/notifications"),
+  sendNotification: (payload: { userId: string; title: string; message: string }) =>
+    apiClient.post<{ notification: Notification }>("/notifications", payload),
   markNotificationRead: (id: string) => apiClient.post<{ notification: Notification }>(`/notifications/${id}/read`),
   reports: () => apiClient.get<{ reports: Record<string, unknown> }>("/reports"),
   auditLogs: () => apiClient.get<{ logs: AuditLog[] }>("/audit-logs"),

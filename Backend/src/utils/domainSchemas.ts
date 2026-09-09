@@ -57,6 +57,12 @@ export const paymentVerifySchema = z.object({
   status: z.enum(["Verified", "Rejected"]),
 });
 
+export const notificationCreateSchema = z.object({
+  userId: z.string().uuid(),
+  title: z.string().min(2),
+  message: z.string().min(2),
+});
+
 export const securityReportCreateSchema = z.object({
   title: z.string().min(3),
   description: z.string().min(5),

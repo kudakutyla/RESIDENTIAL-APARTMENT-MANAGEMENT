@@ -48,6 +48,16 @@ export function ContractorDashboard({ user, onProfileUpdated }: { user: User; on
     }
   };
 
+  const quickMarkStatus = async (requestId: string, status: "In Progress" | "Completed") => {
+    try {
+      await platformService.addMaintenanceUpdate(requestId, { message: `Marked as ${status}.`, status });
+      await queryClient.invalidateQueries({ queryKey: ["maintenance"] });
+      toast.success(`Job marked as ${status}.`);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to update job status."));
+    }
+  };
+
   return (
     <>
       <StatCards cards={cards} />
@@ -66,6 +76,20 @@ export function ContractorDashboard({ user, onProfileUpdated }: { user: User; on
                     <p className="font-medium">{item.title}</p>
                     <p className="text-brand-charcoal/70">{item.status} - {item.priority}{item.category ? ` - ${item.category}` : ""}</p>
                     {item.description && <p className="mt-1 text-brand-charcoal/70">{item.description}</p>}
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        variant={item.status === "In Progress" ? "secondary" : "primary"}
+                        onClick={() => quickMarkStatus(item.id, "In Progress")}
+                      >
+                        Mark In Progress
+                      </Button>
+                      <Button
+                        variant={item.status === "Completed" ? "secondary" : "primary"}
+                        onClick={() => quickMarkStatus(item.id, "Completed")}
+                      >
+                        Mark Completed
+                      </Button>
+                    </div>
                     <div className="mt-3 space-y-2 border-t border-brand-sand/50 pt-3">
                       <Input
                         placeholder="Update message"

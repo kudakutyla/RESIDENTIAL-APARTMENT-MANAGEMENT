@@ -4,12 +4,21 @@ import { logAuditEvent } from "../utils/audit";
 
 export async function listApartmentsForUser(user: { id: string; role: string }) {
   if (user.role === "ADMIN") {
-    const { rows } = await query(`SELECT a.*, b.name as building_name FROM apartments a JOIN buildings b ON b.id = a.building_id ORDER BY b.name, apartment_number`);
+    const { rows } = await query(
+      `SELECT a.*, b.name as building_name, u.full_name as tenant_name, u.email as tenant_email
+       FROM apartments a
+       JOIN buildings b ON b.id = a.building_id
+       LEFT JOIN users u ON u.id = a.tenant_id
+       ORDER BY b.name, apartment_number`,
+    );
     return rows;
   }
   if (user.role === "MANAGER") {
     const { rows } = await query(
-      `SELECT a.*, b.name as building_name FROM apartments a JOIN buildings b ON b.id = a.building_id
+      `SELECT a.*, b.name as building_name, u.full_name as tenant_name, u.email as tenant_email
+       FROM apartments a
+       JOIN buildings b ON b.id = a.building_id
+       LEFT JOIN users u ON u.id = a.tenant_id
        WHERE b.manager_id = $1 ORDER BY b.name, apartment_number`,
       [user.id],
     );
