@@ -182,7 +182,7 @@ export function AdminDashboard({ user, onProfileUpdated }: { user: User; onProfi
                       >
                         <option value="">Select contractor</option>
                         {(contractors.data?.contractors || []).map((c) => (
-                          <option key={c.id} value={c.id}>{c.full_name} - {c.specialization}</option>
+                          <option key={c.id} value={c.id}>{c.full_name} - {c.phone}</option>
                         ))}
                       </select>
                       <Button onClick={() => assignContractor(item.id)}>Assign</Button>

@@ -13,14 +13,13 @@ import { AnnouncementsCard, NotificationsCard, ProfileCard, StatCards } from "./
 export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onProfileUpdated: () => Promise<void> }) {
   const queryClient = useQueryClient();
   const [assignSelection, setAssignSelection] = useState<Record<string, string>>({});
-  const [contractorProfileForm, setContractorProfileForm] = useState({ userId: "", companyName: "", phone: "", specialization: "" });
+  const [contractorForm, setContractorForm] = useState({ fullName: "", email: "", phone: "", password: "" });
 
   const dashboard = useQuery({ queryKey: ["dashboard"], queryFn: () => platformService.dashboard() });
   const maintenance = useQuery({ queryKey: ["maintenance"], queryFn: () => platformService.maintenanceList() });
   const contractors = useQuery({ queryKey: ["contractors"], queryFn: () => platformService.contractors() });
   const payments = useQuery({ queryKey: ["payments"], queryFn: () => platformService.payments() });
   const reports = useQuery({ queryKey: ["reports"], queryFn: () => platformService.reports() });
-  const contractorUsers = useQuery({ queryKey: ["users", "CONTRACTOR"], queryFn: () => platformService.users() });
 
   const cards = useMemo(() => {
     const data = dashboard.data?.dashboard;
@@ -63,18 +62,18 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
     }
   };
 
-  const createContractorProfile = async () => {
-    if (!contractorProfileForm.userId || !contractorProfileForm.companyName || !contractorProfileForm.phone || !contractorProfileForm.specialization) {
-      toast.error("Fill in all contractor profile fields.");
+  const createContractor = async () => {
+    if (!contractorForm.fullName || !contractorForm.email || !contractorForm.phone || !contractorForm.password) {
+      toast.error("Fill in all contractor fields.");
       return;
     }
     try {
-      await platformService.createContractor(contractorProfileForm);
-      setContractorProfileForm({ userId: "", companyName: "", phone: "", specialization: "" });
+      await platformService.createContractor(contractorForm);
+      setContractorForm({ fullName: "", email: "", phone: "", password: "" });
       await queryClient.invalidateQueries({ queryKey: ["contractors"] });
-      toast.success("Contractor profile created successfully.");
+      toast.success("Contractor registered successfully.");
     } catch (error) {
-      toast.error(getErrorMessage(error, "Unable to create contractor profile."));
+      toast.error(getErrorMessage(error, "Unable to register contractor."));
     }
   };
 
@@ -102,7 +101,7 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
                       >
                         <option value="">Select contractor</option>
                         {(contractors.data?.contractors || []).map((c) => (
-                          <option key={c.id} value={c.id}>{c.full_name} - {c.specialization}</option>
+                          <option key={c.id} value={c.id}>{c.full_name} - {c.phone}</option>
                         ))}
                       </select>
                       <Button onClick={() => assignContractor(item.id)}>Assign</Button>
@@ -144,7 +143,7 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
           {contractors.data?.contractors.length ? (
             <ul className="mt-3 space-y-2 text-sm">
               {contractors.data.contractors.slice(0, 10).map((c) => (
-                <li key={c.id} className="rounded border border-brand-sand/40 p-2">{c.full_name} - {c.specialization} - {c.status}</li>
+                <li key={c.id} className="rounded border border-brand-sand/40 p-2">{c.full_name} - {c.phone} - {c.status}</li>
               ))}
             </ul>
           ) : (
@@ -155,22 +154,13 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
 
       <section className="mt-6 grid gap-6 lg:grid-cols-2">
         <article className="rounded-xl bg-white p-4">
-          <h2 className="text-lg">Register Contractor Profile</h2>
+          <h2 className="text-lg">Register Contractor</h2>
           <div className="mt-3 space-y-2">
-            <select
-              className="h-10 w-full rounded-md border border-brand-sand/70 bg-white px-3"
-              value={contractorProfileForm.userId}
-              onChange={(e) => setContractorProfileForm((prev) => ({ ...prev, userId: e.target.value }))}
-            >
-              <option value="">Select contractor user</option>
-              {(contractorUsers.data?.users || []).map((u) => (
-                <option key={u.id} value={u.id}>{u.full_name || u.fullName} - {u.email}</option>
-              ))}
-            </select>
-            <Input placeholder="Company name" value={contractorProfileForm.companyName} onChange={(e) => setContractorProfileForm((prev) => ({ ...prev, companyName: e.target.value }))} />
-            <Input placeholder="Phone" value={contractorProfileForm.phone} onChange={(e) => setContractorProfileForm((prev) => ({ ...prev, phone: e.target.value }))} />
-            <Input placeholder="Specialization" value={contractorProfileForm.specialization} onChange={(e) => setContractorProfileForm((prev) => ({ ...prev, specialization: e.target.value }))} />
-            <Button onClick={createContractorProfile}>Register Contractor</Button>
+            <Input placeholder="Full name" value={contractorForm.fullName} onChange={(e) => setContractorForm((prev) => ({ ...prev, fullName: e.target.value }))} />
+            <Input placeholder="Email" type="email" value={contractorForm.email} onChange={(e) => setContractorForm((prev) => ({ ...prev, email: e.target.value }))} />
+            <Input placeholder="Phone" value={contractorForm.phone} onChange={(e) => setContractorForm((prev) => ({ ...prev, phone: e.target.value }))} />
+            <Input placeholder="Temporary password" type="password" value={contractorForm.password} onChange={(e) => setContractorForm((prev) => ({ ...prev, password: e.target.value }))} />
+            <Button onClick={createContractor}>Register Contractor</Button>
           </div>
         </article>
 

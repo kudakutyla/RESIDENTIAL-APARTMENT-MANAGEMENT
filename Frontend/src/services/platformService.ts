@@ -36,7 +36,7 @@ type Announcement = { id: string; title: string; message: string };
 type Notification = { id: string; title: string; message: string; is_read: boolean };
 type AuditLog = { id: string; action: string; entity_type: string };
 type UserRecord = { id: string; full_name?: string; fullName?: string; email: string; role: string };
-type Contractor = { id: string; user_id: string; full_name: string; email: string; company_name: string; phone: string; specialization: string; status: string };
+type Contractor = { id: string; user_id: string; full_name: string; email: string; company_name?: string | null; phone: string; specialization?: string | null; status: string };
 type ApiEntity = Record<string, unknown>;
 
 export const platformService = {
@@ -54,8 +54,8 @@ export const platformService = {
   addMaintenanceUpdate: (requestId: string, payload: { message: string; status?: string }) =>
     apiClient.post<{ request: ApiEntity }>(`/maintenance/${requestId}/updates`, payload),
   contractors: () => apiClient.get<{ contractors: Contractor[] }>("/contractors"),
-  createContractor: (payload: { userId: string; companyName: string; phone: string; specialization: string }) =>
-    apiClient.post<{ contractor: Contractor }>("/contractors", payload),
+  createContractor: (payload: { fullName: string; email: string; phone: string; password: string }) =>
+    apiClient.post<{ user: UserRecord; contractor: Contractor }>("/contractors", payload),
   buildings: () => apiClient.get<{ buildings: ApiEntity[] }>("/buildings"),
   apartments: () => apiClient.get<{ apartments: Apartment[] }>("/apartments"),
   updateApartment: (id: string, payload: {

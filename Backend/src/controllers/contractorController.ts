@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createContractor, listContractors } from "../services/contractorService";
+import { listContractors, registerContractor } from "../services/contractorService";
 
 export async function getContractors(_req: Request, res: Response) {
   const contractors = await listContractors();
@@ -7,6 +7,6 @@ export async function getContractors(_req: Request, res: Response) {
 }
 
 export async function postContractor(req: Request, res: Response) {
-  const contractor = await createContractor(req.body);
-  res.status(201).json({ contractor });
+  const result = await registerContractor({ ...req.body, actorUserId: req.user!.id });
+  res.status(201).json(result);
 }

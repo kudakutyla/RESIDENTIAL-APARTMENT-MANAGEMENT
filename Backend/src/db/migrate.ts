@@ -60,13 +60,15 @@ const statements = [
   `CREATE TABLE IF NOT EXISTS contractors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL UNIQUE REFERENCES users(id),
-    company_name TEXT NOT NULL,
+    company_name TEXT,
     phone TEXT NOT NULL,
-    specialization TEXT NOT NULL,
+    specialization TEXT,
     status user_status NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );`,
+  `ALTER TABLE contractors ALTER COLUMN company_name DROP NOT NULL;`,
+  `ALTER TABLE contractors ALTER COLUMN specialization DROP NOT NULL;`,
   `CREATE TABLE IF NOT EXISTS maintenance_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES users(id),

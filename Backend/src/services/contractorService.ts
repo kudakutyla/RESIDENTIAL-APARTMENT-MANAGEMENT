@@ -1,5 +1,9 @@
 import { query } from "../db/client";
 import { HttpError } from "../utils/httpError";
+import { createUser, findUserByEmail } from "../repositories/userRepository";
+import { hashPassword } from "../utils/password";
+import { logAuditEvent } from "../utils/audit";
+import { sanitizeUser } from "./authService";
 
 export async function listContractors() {
   const { rows } = await query(
@@ -8,18 +12,40 @@ export async function listContractors() {
   return rows;
 }
 
-export async function createContractor(input: {
-  userId: string;
-  companyName: string;
+export async function registerContractor(input: {
+  actorUserId: string;
+  fullName: string;
+  email: string;
   phone: string;
-  specialization: string;
+  password: string;
 }) {
+  const existing = await findUserByEmail(input.email);
+  if (existing) {
+    throw new HttpError(409, "Email already exists");
+  }
+
+  const passwordHash = await hashPassword(input.password);
+  const user = await createUser({
+    fullName: input.fullName,
+    email: input.email,
+    phone: input.phone,
+    passwordHash,
+    role: "CONTRACTOR",
+  });
+
   const { rows } = await query(
-    `INSERT INTO contractors (user_id, company_name, phone, specialization)
-     VALUES ($1,$2,$3,$4) RETURNING *`,
-    [input.userId, input.companyName, input.phone, input.specialization],
+    `INSERT INTO contractors (user_id, phone) VALUES ($1,$2) RETURNING *`,
+    [user.id, input.phone],
   );
-  return rows[0];
+
+  await logAuditEvent({
+    actorUserId: input.actorUserId,
+    action: "CONTRACTOR_REGISTERED",
+    entityType: "USER",
+    entityId: user.id,
+  });
+
+  return { user: sanitizeUser(user), contractor: rows[0] };
 }
 
 export async function getContractorByUser(userId: string) {
@@ -27,3 +53,4 @@ export async function getContractorByUser(userId: string) {
   if (!rows.length) throw new HttpError(404, "Contractor profile not found");
   return rows[0];
 }
+

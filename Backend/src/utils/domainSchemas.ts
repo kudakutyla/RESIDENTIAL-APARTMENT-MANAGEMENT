@@ -8,6 +8,13 @@ export const createStaffSchema = z.object({
   role: z.enum(["MANAGER", "CONTRACTOR", "ADMIN"]),
 });
 
+export const registerContractorSchema = z.object({
+  fullName: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(6),
+  password: z.string().min(8),
+});
+
 export const userStatusSchema = z.object({
   status: z.enum(["ACTIVE", "DISABLED"]),
 });
