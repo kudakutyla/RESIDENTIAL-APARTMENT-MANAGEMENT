@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { User } from "@/types";
@@ -126,9 +127,11 @@ export function TenantDashboard({ user, onProfileUpdated }: { user: User; onProf
           ) : maintenance.data?.requests.length ? (
             <ul className="mt-3 space-y-2 text-sm">
               {maintenance.data.requests.slice(0, 8).map((item) => (
-                <li key={item.id} className="rounded border border-brand-sand/40 p-2">
-                  <p className="font-medium">{item.title}</p>
-                  <p className="text-brand-charcoal/70">{item.status} - {item.priority}</p>
+                <li key={item.id}>
+                  <Link href={`/portal/maintenance/${item.id}`} className="block rounded border border-brand-sand/40 p-2 hover:bg-brand-cream">
+                    <p className="font-medium">{item.title}</p>
+                    <p className="text-brand-charcoal/70">{item.status} - {item.priority}</p>
+                  </Link>
                 </li>
               ))}
             </ul>

@@ -28,6 +28,8 @@ type MaintenanceRequest = {
   tenant_id?: string;
   assigned_contractor_id?: string | null;
 };
+type MaintenanceUpdateEntry = { id: string; message: string; status?: string | null; created_at: string; full_name: string };
+type MaintenanceDetail = MaintenanceRequest & { updates: MaintenanceUpdateEntry[] };
 type Apartment = { id: string; building_id?: string; apartment_number: string; building_name?: string; floor: number; bedrooms: number; monthly_rent: number; status: "AVAILABLE" | "OCCUPIED" | "MAINTENANCE"; tenant_id?: string | null; tenant_name?: string | null; tenant_email?: string | null };
 type Building = { id: string; name: string; address: string; description?: string | null; manager_id?: string | null; is_active: boolean };
 type Payment = { id: string; month_label: string; amount: number; status: string; tenant_name?: string };
@@ -43,6 +45,7 @@ type ApiEntity = Record<string, unknown>;
 export const platformService = {
   dashboard: () => apiClient.get<{ dashboard: DashboardData }>("/dashboard"),
   maintenanceList: () => apiClient.get<{ requests: MaintenanceRequest[] }>("/maintenance"),
+  maintenanceGet: (id: string) => apiClient.get<{ request: MaintenanceDetail }>(`/maintenance/${id}`),
   maintenanceCreate: (payload: {
     apartmentId: string;
     title: string;

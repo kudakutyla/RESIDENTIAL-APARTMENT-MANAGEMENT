@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { User } from "@/types";
@@ -12,7 +13,6 @@ import { AnnouncementsCard, NotificationsCard, ProfileCard, StatCards } from "./
 
 export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onProfileUpdated: () => Promise<void> }) {
   const queryClient = useQueryClient();
-  const [assignSelection, setAssignSelection] = useState<Record<string, string>>({});
   const [contractorForm, setContractorForm] = useState({ fullName: "", email: "", phone: "", password: "" });
   const [notificationForm, setNotificationForm] = useState({ recipientType: "TENANT" as "TENANT" | "CONTRACTOR", userId: "", title: "", message: "" });
 
@@ -51,21 +51,6 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
       .filter((a) => a.tenant_id && !seen.has(a.tenant_id) && seen.add(a.tenant_id))
       .map((a) => ({ id: a.tenant_id as string, label: `${a.tenant_name || "Tenant"} - ${a.apartment_number}` }));
   }, [apartments.data]);
-
-  const assignContractor = async (requestId: string) => {
-    const contractorId = assignSelection[requestId];
-    if (!contractorId) {
-      toast.error("Select a contractor first.");
-      return;
-    }
-    try {
-      await platformService.assignContractor(requestId, contractorId);
-      await queryClient.invalidateQueries({ queryKey: ["maintenance"] });
-      toast.success("Contractor assigned successfully.");
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Unable to assign contractor."));
-    }
-  };
 
   const verifyPayment = async (paymentId: string, status: "Verified" | "Rejected") => {
     try {
@@ -132,24 +117,11 @@ export function ManagerDashboard({ user, onProfileUpdated }: { user: User; onPro
           ) : maintenance.data?.requests.length ? (
             <ul className="mt-3 space-y-3 text-sm">
               {maintenance.data.requests.slice(0, 10).map((item) => (
-                <li key={item.id} className="rounded border border-brand-sand/40 p-2">
-                  <p className="font-medium">{item.title}</p>
-                  <p className="text-brand-charcoal/70">{item.status} - {item.priority}</p>
-                  {!item.assigned_contractor_id && (
-                    <div className="mt-2 flex gap-2">
-                      <select
-                        className="h-9 flex-1 rounded-md border border-brand-sand/70 bg-white px-2 text-sm"
-                        value={assignSelection[item.id] || ""}
-                        onChange={(e) => setAssignSelection((prev) => ({ ...prev, [item.id]: e.target.value }))}
-                      >
-                        <option value="">Select contractor</option>
-                        {(contractors.data?.contractors || []).map((c) => (
-                          <option key={c.id} value={c.id}>{c.full_name} - {c.phone}</option>
-                        ))}
-                      </select>
-                      <Button onClick={() => assignContractor(item.id)}>Assign</Button>
-                    </div>
-                  )}
+                <li key={item.id}>
+                  <Link href={`/portal/maintenance/${item.id}`} className="block rounded border border-brand-sand/40 p-2 hover:bg-brand-cream">
+                    <p className="font-medium">{item.title}</p>
+                    <p className="text-brand-charcoal/70">{item.status} - {item.priority}</p>
+                  </Link>
                 </li>
               ))}
             </ul>
